@@ -18,6 +18,7 @@
     "hardhat:matic": "hardhat --network matic",
     "hardhat:fuji": "hardhat --network fuji",
     "hardhat:avalanche": "hardhat --network avalanche",
+    "hardhat:ganache":"hardhat --network coverage",
     "compile": "SKIP_LOAD=true hardhat compile",
     "console:fork": "FORK=main hardhat console",
     "test": "npm run compile && TS_NODE_TRANSPILE_ONLY=1 hardhat test ./test-suites/test-aave/*.spec.ts",
@@ -28,6 +29,7 @@
     "test:main:check-list": "npm run compile && FORK=main TS_NODE_TRANSPILE_ONLY=1 hardhat test  test-suites/test-aave/__setup.spec.ts test-suites/test-aave/mainnet/check-list.spec.ts",
     "dev:coverage": "buidler compile --force && buidler coverage --network coverage",
     "aave:evm:dev:migration": "npm run compile && hardhat aave:dev",
+    "aave:ganache:dev:migration": "npm run compile && npm run hardhat:ganache -- aave:dev",
     "aave:docker:full:migration": "npm run compile && npm run hardhat:docker -- aave:mainnet --skip-registry",
     "aave:kovan:full:migration": "npm run compile && npm run hardhat:kovan -- aave:mainnet --skip-registry",
     "matic:mumbai:full:migration": "npm run compile && npm run hardhat:mumbai sidechain:mainnet -- --pool Matic --skip-registry",
@@ -77,6 +79,7 @@
     "mumbai:deployUIProvider": "hardhat --network mumbai deploy-UiPoolDataProvider",
     "fuji:deployUIProvider": "hardhat --network fuji deploy-UiPoolDataProvider",
     "dev:deployUIProviderV2": "hardhat --network kovan deploy-UiPoolDataProviderV2 --verify",
+    "ganache:deployUIProviderV2": "hardhat --network coverage deploy-UiPoolDataProviderV2",
     "dev:deployUIProviderV2V3": "hardhat --network kovan deploy-UiPoolDataProviderV2V3 --verify",
     "fuji:deployUIIncentivesV2V3": "hardhat --network fuji deploy-UiIncentiveDataProviderV2V3",
     "mumbai:deployUIIncentivesV2V3": "hardhat --network mumbai deploy-UiIncentiveDataProviderV2V3 --verify",
@@ -104,7 +107,8 @@
     "print-config:kovan": "hardhat --network kovan print-config --pool Aave --data-provider 0xA1901785c29cBd48bfA74e46b67C736b26054fa4",
     "external:deploy-assets-kovan": "npm run compile && hardhat --network kovan external:deploy-new-asset --symbol ${SYMBOL} --verify",
     "external:deploy-assets-main": "npm run compile && hardhat --network main external:deploy-new-asset --symbol ${SYMBOL} --verify",
-    "prepublishOnly": "npm run compile"
+    "prepublishOnly": "npm run compile",
+    "mint:tokens:mock": "hardhat --network coverage mint-tokens-mock"
   },
   "devDependencies": {
     "@nomiclabs/buidler": "^1.4.7",

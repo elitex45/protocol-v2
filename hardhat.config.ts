@@ -96,7 +96,7 @@ const buidlerConfig: HardhatUserConfig = {
   },
   networks: {
     coverage: {
-      url: 'http://localhost:8555',
+      url: 'http://localhost:7545',
       chainId: COVERAGE_CHAINID,
     },
     kovan: getCommonNetworkConfig(eEthereumNetwork.kovan, 42),

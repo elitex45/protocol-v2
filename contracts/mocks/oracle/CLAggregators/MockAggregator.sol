@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity 0.6.12;
+import {IChainlinkAggregator} from '../interfaces/IChainlinkAggregator.sol';
 
-contract MockAggregator {
+contract MockAggregator is IChainlinkAggregator {
   int256 private _latestAnswer;
 
   event AnswerUpdated(int256 indexed current, uint256 indexed roundId, uint256 timestamp);
@@ -11,12 +12,12 @@ contract MockAggregator {
     emit AnswerUpdated(_initialAnswer, 0, now);
   }
 
-  function latestAnswer() external view returns (int256) {
+  function latestAnswer() external view override returns (int256) {
     return _latestAnswer;
   }
 
-  function getTokenType() external view returns (uint256) {
-    return 1;
+  function decimals() external view override returns (uint8) {
+    return 18;
   }
 
   // function getSubTokens() external view returns (address[] memory) {

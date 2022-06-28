@@ -87,6 +87,7 @@ export const chainlinkAggregatorProxy = {
   'arbitrum-rinkeby': '0x5f0423B1a6935dc5596e7A24d98532b67A0AeFd8',
   arbitrum: '0x639Fe6ab55C921f74e7fac1ee960C0B6293ba612',
   rinkeby: '0x8A753747A1Fa494EC906cE90E9f37563A8AF630e',
+  coverage: '0x8595fd6493Eb7Af5ACf7be1E7e331Ee778115777',
 };
 
 export const chainlinkEthUsdAggregatorProxy = {
@@ -100,4 +101,5 @@ export const chainlinkEthUsdAggregatorProxy = {
   'arbitrum-rinkeby': '0x5f0423B1a6935dc5596e7A24d98532b67A0AeFd8',
   arbitrum: '0x639Fe6ab55C921f74e7fac1ee960C0B6293ba612',
   rinkeby: '0x8A753747A1Fa494EC906cE90E9f37563A8AF630e',
+  coverage: '0x8595fd6493Eb7Af5ACf7be1E7e331Ee778115777',
 };
