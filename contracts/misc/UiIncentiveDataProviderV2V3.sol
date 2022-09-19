@@ -67,20 +67,19 @@ contract UiIncentiveDataProviderV2V3 is IUiIncentiveDataProviderV3 {
             uint256 aEmissionPerSecond,
             uint256 aIncentivesLastUpdateTimestamp
           ) {
-
-              aRewardsInformation[0] = RewardInfo(
-                getSymbol(aRewardToken),
-                aRewardToken,
-                address(0),
-                aEmissionPerSecond,
-                aIncentivesLastUpdateTimestamp,
-                aTokenIncentivesIndex,
-                aTokenIncentiveController.DISTRIBUTION_END(),
-                0,
-                IERC20Detailed(aRewardToken).decimals(),
-                aTokenIncentiveController.PRECISION(),
-                0
-              );
+            aRewardsInformation[0] = RewardInfo(
+              getSymbol(aRewardToken),
+              aRewardToken,
+              address(0),
+              aEmissionPerSecond,
+              aIncentivesLastUpdateTimestamp,
+              aTokenIncentivesIndex,
+              aTokenIncentiveController.DISTRIBUTION_END(),
+              0,
+              IERC20Detailed(aRewardToken).decimals(),
+              aTokenIncentiveController.PRECISION(),
+              0
+            );
             reserveIncentiveData.aIncentiveData = IncentiveData(
               baseData.aTokenAddress,
               address(aTokenIncentiveController),

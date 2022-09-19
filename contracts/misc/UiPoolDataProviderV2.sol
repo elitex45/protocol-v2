@@ -92,6 +92,8 @@ contract UiPoolDataProviderV2 is IUiPoolDataProviderV2 {
       reserveData.aTokenAddress = baseData.aTokenAddress;
       reserveData.stableDebtTokenAddress = baseData.stableDebtTokenAddress;
       reserveData.variableDebtTokenAddress = baseData.variableDebtTokenAddress;
+      reserveData.creditTokensAddress = baseData.creditTokensAddress;
+
       reserveData.interestRateStrategyAddress = baseData.interestRateStrategyAddress;
       reserveData.priceInMarketReferenceCurrency = oracle.getAssetPrice(
         reserveData.underlyingAsset
@@ -150,8 +152,8 @@ contract UiPoolDataProviderV2 is IUiPoolDataProviderV2 {
       if (ETH_CURRENCY_UNIT == baseCurrencyUnit) {
         baseCurrencyInfo.marketReferenceCurrencyUnit = ETH_CURRENCY_UNIT;
         baseCurrencyInfo
-        .marketReferenceCurrencyPriceInUsd = marketReferenceCurrencyPriceInUsdProxyAggregator
-        .latestAnswer();
+          .marketReferenceCurrencyPriceInUsd = marketReferenceCurrencyPriceInUsdProxyAggregator
+          .latestAnswer();
       } else {
         baseCurrencyInfo.marketReferenceCurrencyUnit = baseCurrencyUnit;
         baseCurrencyInfo.marketReferenceCurrencyPriceInUsd = int256(baseCurrencyUnit);

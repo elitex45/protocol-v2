@@ -55,6 +55,7 @@ import {
   UiPoolDataProviderV2V3Factory,
   UiIncentiveDataProviderV2V3,
   UiIncentiveDataProviderV2Factory,
+  CreditTokenNewFactory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -72,6 +73,14 @@ import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { LendingPoolLibraryAddresses } from '../types/LendingPoolFactory';
 import { UiPoolDataProvider } from '../types';
 import { eNetwork } from './types';
+
+export const deployCreditTokenNew = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new CreditTokenNewFactory(await getFirstSigner()).deploy(),
+    eContractid.CreditTokenNew,
+    [],
+    verify
+  );
 
 export const deployUiIncentiveDataProviderV2 = async (verify?: boolean) =>
   withSaveAndVerify(
@@ -748,6 +757,7 @@ export const deployATokenImplementations = async (
   if (!notFalsyOrZeroAddress(geneticVariableDebtTokenAddress)) {
     await deployGenericVariableDebtToken(verify);
   }
+  await deployCreditTokenNew(verify);
 };
 
 export const deployRateStrategy = async (

@@ -29,6 +29,7 @@ interface IUiPoolDataProviderV2 {
     address aTokenAddress;
     address stableDebtTokenAddress;
     address variableDebtTokenAddress;
+    address creditTokensAddress;
     address interestRateStrategyAddress;
     //
     uint256 availableLiquidity;
@@ -68,15 +69,10 @@ interface IUiPoolDataProviderV2 {
   function getReservesData(ILendingPoolAddressesProvider provider)
     external
     view
-    returns (
-      AggregatedReserveData[] memory,
-      BaseCurrencyInfo memory
-    );
+    returns (AggregatedReserveData[] memory, BaseCurrencyInfo memory);
 
   function getUserReservesData(ILendingPoolAddressesProvider provider, address user)
     external
     view
-    returns (
-      UserReserveData[] memory
-    );
+    returns (UserReserveData[] memory);
 }

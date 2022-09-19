@@ -18,7 +18,7 @@ task('mint-tokens-mock', 'Mint Mock tokens to admin address').setAction(async ({
 
   for (var token in protoPoolReservesAddresses) {
     const erc = await getMintableERC20(allTokenAddresses[token]);
-    await waitForTx(await erc.mint(ethers.utils.parseEther('1000')));
+    await waitForTx(await erc.mint(ethers.utils.parseEther('1000000')));
     console.log('key:', token, 'address', allTokenAddresses[token]);
   }
 });

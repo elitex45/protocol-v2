@@ -334,7 +334,8 @@ interface ILendingPool {
       uint256 availableBorrowsETH,
       uint256 currentLiquidationThreshold,
       uint256 ltv,
-      uint256 healthFactor
+      uint256 healthFactor,
+      uint256 totalCreditInEth
     );
 
   function initReserve(
@@ -342,7 +343,8 @@ interface ILendingPool {
     address aTokenAddress,
     address stableDebtAddress,
     address variableDebtAddress,
-    address interestRateStrategyAddress
+    address interestRateStrategyAddress,
+    address creditTokenAddress
   ) external;
 
   function setReserveInterestRateStrategyAddress(address reserve, address rateStrategyAddress)

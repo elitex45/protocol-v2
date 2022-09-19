@@ -51,7 +51,7 @@ interface IUiPoolDataProviderV3 {
     uint256 debtCeilingDecimals;
     uint8 eModeCategoryId;
     uint256 borrowCap;
-    uint256 supplyCap; 
+    uint256 supplyCap;
     // eMode
     uint16 eModeLtv;
     uint16 eModeLiquidationThreshold;
@@ -86,15 +86,10 @@ interface IUiPoolDataProviderV3 {
   function getReservesData(ILendingPoolAddressesProvider provider)
     external
     view
-    returns (
-      AggregatedReserveData[] memory,
-      BaseCurrencyInfo memory
-    );
+    returns (AggregatedReserveData[] memory, BaseCurrencyInfo memory);
 
   function getUserReservesData(ILendingPoolAddressesProvider provider, address user)
     external
     view
-    returns (
-      UserReserveData[] memory, uint8
-    );
+    returns (UserReserveData[] memory, uint8);
 }

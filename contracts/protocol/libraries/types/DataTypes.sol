@@ -23,6 +23,7 @@ library DataTypes {
     address variableDebtTokenAddress;
     //address of the interest rate strategy
     address interestRateStrategyAddress;
+    address creditTokensAddress;
     //the id of the reserve. Represents the position in the list of the active reserves
     uint8 id;
   }
@@ -45,5 +46,9 @@ library DataTypes {
     uint256 data;
   }
 
-  enum InterestRateMode {NONE, STABLE, VARIABLE}
+  enum InterestRateMode {
+    NONE,
+    STABLE,
+    VARIABLE
+  }
 }

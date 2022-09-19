@@ -87,25 +87,6 @@ export const runTaskWithRetry = async (
   } catch (error) {
     counter--;
 
-    if (okErrors.some((okReason) => error.message.includes(okReason))) {
-      console.info('[ETHERSCAN][INFO] Skipping due OK response: ', error.message);
-      return;
-    }
-
-    if (fatalErrors.some((fatalError) => error.message.includes(fatalError))) {
-      console.error(
-        '[ETHERSCAN][ERROR] Fatal error detected, skip retries and resume deployment.',
-        error.message
-      );
-      return;
-    }
-    console.error('[ETHERSCAN][ERROR]', error.message);
-    console.log();
-    console.info(`[ETHERSCAN][[INFO] Retrying attemps: ${counter}.`);
-    if (error.message.includes(unableVerifyError)) {
-      console.log('[ETHERSCAN][WARNING] Trying to verify via uploading all sources.');
-      delete params.relatedSources;
-    }
     await runTaskWithRetry(task, params, counter, msDelay, cleanup);
   }
 };

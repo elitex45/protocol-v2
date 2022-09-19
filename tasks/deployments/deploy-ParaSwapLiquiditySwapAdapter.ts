@@ -19,9 +19,10 @@ task(`deploy-${CONTRACT_NAME}`, `Deploys the ${CONTRACT_NAME} contract`)
     }
 
     console.log(`\n- ${CONTRACT_NAME} deployment`);
-    const adapter = await new ParaSwapLiquiditySwapAdapterFactory(
-      await getFirstSigner()
-    ).deploy(provider, augustusRegistry);
+    const adapter = await new ParaSwapLiquiditySwapAdapterFactory(await getFirstSigner()).deploy(
+      provider,
+      augustusRegistry
+    );
     await adapter.deployTransaction.wait();
     console.log(`${CONTRACT_NAME}.address`, adapter.address);
 

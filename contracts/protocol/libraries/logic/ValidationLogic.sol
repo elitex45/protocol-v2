@@ -93,6 +93,7 @@ library ValidationLogic {
     uint256 currentLiquidationThreshold;
     uint256 amountOfCollateralNeededETH;
     uint256 userCollateralBalanceETH;
+    uint256 totalCreditInEth;
     uint256 userBorrowBalanceETH;
     uint256 availableLiquidity;
     uint256 healthFactor;
@@ -155,7 +156,8 @@ library ValidationLogic {
       vars.userBorrowBalanceETH,
       vars.currentLtv,
       vars.currentLiquidationThreshold,
-      vars.healthFactor
+      vars.healthFactor,
+      vars.totalCreditInEth
     ) = GenericLogic.calculateUserAccountData(
       userAddress,
       reservesData,
@@ -165,7 +167,10 @@ library ValidationLogic {
       oracle
     );
 
-    require(vars.userCollateralBalanceETH > 0, Errors.VL_COLLATERAL_BALANCE_IS_0);
+    require(
+      (vars.userCollateralBalanceETH.add(vars.totalCreditInEth)) > 0,
+      Errors.VL_COLLATERAL_BALANCE_IS_0
+    );
 
     require(
       vars.healthFactor > GenericLogic.HEALTH_FACTOR_LIQUIDATION_THRESHOLD,
@@ -178,7 +183,8 @@ library ValidationLogic {
     ); //LTV is calculated in percentage
 
     require(
-      vars.amountOfCollateralNeededETH <= vars.userCollateralBalanceETH,
+      vars.amountOfCollateralNeededETH <=
+        (vars.userCollateralBalanceETH.add(vars.totalCreditInEth)),
       Errors.VL_COLLATERAL_CANNOT_COVER_NEW_BORROW
     );
 
@@ -312,8 +318,10 @@ library ValidationLogic {
     require(isActive, Errors.VL_NO_ACTIVE_RESERVE);
 
     //if the usage ratio is below 95%, no rebalances are needed
-    uint256 totalDebt =
-      stableDebtToken.totalSupply().add(variableDebtToken.totalSupply()).wadToRay();
+    uint256 totalDebt = stableDebtToken
+      .totalSupply()
+      .add(variableDebtToken.totalSupply())
+      .wadToRay();
     uint256 availableLiquidity = IERC20(reserveAddress).balanceOf(aTokenAddress).wadToRay();
     uint256 usageRatio = totalDebt == 0 ? 0 : totalDebt.rayDiv(availableLiquidity.add(totalDebt));
 
@@ -321,8 +329,9 @@ library ValidationLogic {
     //then we allow rebalancing of the stable rate positions.
 
     uint256 currentLiquidityRate = reserve.currentLiquidityRate;
-    uint256 maxVariableBorrowRate =
-      IReserveInterestRateStrategy(reserve.interestRateStrategyAddress).getMaxVariableBorrowRate();
+    uint256 maxVariableBorrowRate = IReserveInterestRateStrategy(
+      reserve.interestRateStrategyAddress
+    ).getMaxVariableBorrowRate();
 
     require(
       usageRatio >= REBALANCE_UP_USAGE_RATIO_THRESHOLD &&
@@ -413,9 +422,8 @@ library ValidationLogic {
       );
     }
 
-    bool isCollateralEnabled =
-      collateralReserve.configuration.getLiquidationThreshold() > 0 &&
-        userConfig.isUsingAsCollateral(collateralReserve.id);
+    bool isCollateralEnabled = collateralReserve.configuration.getLiquidationThreshold() > 0 &&
+      userConfig.isUsingAsCollateral(collateralReserve.id);
 
     //if collateral isn't enabled as collateral by user, it cannot be liquidated
     if (!isCollateralEnabled) {
@@ -451,15 +459,14 @@ library ValidationLogic {
     uint256 reservesCount,
     address oracle
   ) internal view {
-    (, , , , uint256 healthFactor) =
-      GenericLogic.calculateUserAccountData(
-        from,
-        reservesData,
-        userConfig,
-        reserves,
-        reservesCount,
-        oracle
-      );
+    (, , , , uint256 healthFactor, ) = GenericLogic.calculateUserAccountData(
+      from,
+      reservesData,
+      userConfig,
+      reserves,
+      reservesCount,
+      oracle
+    );
 
     require(
       healthFactor >= GenericLogic.HEALTH_FACTOR_LIQUIDATION_THRESHOLD,

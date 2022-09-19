@@ -1,3 +1,9 @@
+/*we need to change all the functions in this file because we are spliting the bit map as groupof 3
+  instead of group of two (which is done by aave)
+  1st bit represent whether the user is using this asset as a collateral or not
+  2nd bit represents whether the user is borrowing that asset or not
+  3rd bit represents whether the user has credits in that asset or not
+*/
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity 0.6.12;
 
@@ -11,7 +17,10 @@ import {DataTypes} from '../types/DataTypes.sol';
  */
 library UserConfiguration {
   uint256 internal constant BORROWING_MASK =
-    0x5555555555555555555555555555555555555555555555555555555555555555;
+    0xDB6DB6DB6DB6DB6DB6DB6DB6DB6DB6DB6DB6DB6DB6DB6DB6DB6DB6DB6DB6DB6D;
+
+  uint256 internal constant CREDIT_MASK =
+    0xC924924924924924924924924924924924924924924924924924924924924924;
 
   /**
    * @dev Sets if the user is borrowing the reserve identified by reserveIndex
@@ -24,10 +33,10 @@ library UserConfiguration {
     uint256 reserveIndex,
     bool borrowing
   ) internal {
-    require(reserveIndex < 128, Errors.UL_INVALID_INDEX);
+    require(reserveIndex < 85, Errors.UL_INVALID_INDEX);
     self.data =
-      (self.data & ~(1 << (reserveIndex * 2))) |
-      (uint256(borrowing ? 1 : 0) << (reserveIndex * 2));
+      (self.data & ~(1 << (reserveIndex * 3))) |
+      (uint256(borrowing ? 1 : 0) << (reserveIndex * 3));
   }
 
   /**
@@ -41,10 +50,45 @@ library UserConfiguration {
     uint256 reserveIndex,
     bool usingAsCollateral
   ) internal {
-    require(reserveIndex < 128, Errors.UL_INVALID_INDEX);
+    require(reserveIndex < 85, Errors.UL_INVALID_INDEX);
     self.data =
-      (self.data & ~(1 << (reserveIndex * 2 + 1))) |
-      (uint256(usingAsCollateral ? 1 : 0) << (reserveIndex * 2 + 1));
+      (self.data & ~(1 << (reserveIndex * 3 + 1))) |
+      (uint256(usingAsCollateral ? 1 : 0) << (reserveIndex * 3 + 1));
+  }
+
+  function setcreditbacked(
+    DataTypes.UserConfigurationMap memory self,
+    uint256 reserveIndex,
+    bool creditbacked
+  ) internal {
+    require(reserveIndex < 85, Errors.UL_INVALID_INDEX);
+    self.data =
+      (self.data & ~(1 << (reserveIndex * 3 + 2))) |
+      (uint256(creditbacked ? 1 : 0) << (reserveIndex * 3 + 2));
+  }
+
+  /*function to get whether the user has credit in the resrve or not
+   */
+  function hascreditbacked(DataTypes.UserConfigurationMap memory self, uint256 reserveIndex)
+    internal
+    view
+    returns (bool)
+  {
+    require(reserveIndex < 85, Errors.UL_INVALID_INDEX);
+    return (self.data >> (reserveIndex * 3 + 2)) & 1 != 0;
+  }
+
+  //function to validate if a user has been using the reserve for borrowing or as collateral or backed
+  function isUsingAsCollateralOrBorrowingOrhascredit(
+    DataTypes.UserConfigurationMap memory self,
+    uint256 reserveIndex
+  ) internal pure returns (bool) {
+    require(reserveIndex < 85, Errors.UL_INVALID_INDEX);
+    return (self.data >> (reserveIndex * 3)) & 7 != 0;
+  }
+
+  function HasanyCredit(DataTypes.UserConfigurationMap memory self) internal view returns (bool) {
+    return self.data & CREDIT_MASK != 0;
   }
 
   /**
@@ -57,8 +101,8 @@ library UserConfiguration {
     DataTypes.UserConfigurationMap memory self,
     uint256 reserveIndex
   ) internal pure returns (bool) {
-    require(reserveIndex < 128, Errors.UL_INVALID_INDEX);
-    return (self.data >> (reserveIndex * 2)) & 3 != 0;
+    require(reserveIndex < 85, Errors.UL_INVALID_INDEX);
+    return (self.data >> (reserveIndex * 3)) & 3 != 0;
   }
 
   /**
@@ -72,8 +116,8 @@ library UserConfiguration {
     pure
     returns (bool)
   {
-    require(reserveIndex < 128, Errors.UL_INVALID_INDEX);
-    return (self.data >> (reserveIndex * 2)) & 1 != 0;
+    require(reserveIndex < 85, Errors.UL_INVALID_INDEX);
+    return (self.data >> (reserveIndex * 3)) & 1 != 0;
   }
 
   /**
@@ -87,8 +131,8 @@ library UserConfiguration {
     pure
     returns (bool)
   {
-    require(reserveIndex < 128, Errors.UL_INVALID_INDEX);
-    return (self.data >> (reserveIndex * 2 + 1)) & 1 != 0;
+    require(reserveIndex < 85, Errors.UL_INVALID_INDEX);
+    return (self.data >> (reserveIndex * 3 + 1)) & 1 != 0;
   }
 
   /**

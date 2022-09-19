@@ -54,6 +54,7 @@ export const initReservesByHelper = async (
     aTokenImpl: string;
     stableDebtTokenImpl: string;
     variableDebtTokenImpl: string;
+    creditTokenImpl: string;
     underlyingAssetDecimals: BigNumberish;
     interestRateStrategyAddress: string;
     underlyingAsset: string;
@@ -119,6 +120,9 @@ export const initReservesByHelper = async (
       rawInsertContractAddressInDb(strategy.name, strategyAddresses[strategy.name]);
     }
     // Prepare input parameters
+    console.log(await getContractAddressWithJsonFallback(eContractid.StableDebtToken, poolName));
+    console.log(await getContractAddressWithJsonFallback(eContractid.CreditTokenNew, poolName));
+
     reserveSymbols.push(symbol);
     initInputParams.push({
       aTokenImpl: await getContractAddressWithJsonFallback(aTokenImpl, poolName),
@@ -128,6 +132,10 @@ export const initReservesByHelper = async (
       ),
       variableDebtTokenImpl: await getContractAddressWithJsonFallback(
         eContractid.VariableDebtToken,
+        poolName
+      ),
+      creditTokenImpl: await getContractAddressWithJsonFallback(
+        eContractid.CreditTokenNew,
         poolName
       ),
       underlyingAssetDecimals: reserveDecimals,

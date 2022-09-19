@@ -150,8 +150,8 @@ contract UiPoolDataProviderV2V3 is IUiPoolDataProviderV3 {
       if (ETH_CURRENCY_UNIT == baseCurrencyUnit) {
         baseCurrencyInfo.marketReferenceCurrencyUnit = ETH_CURRENCY_UNIT;
         baseCurrencyInfo
-        .marketReferenceCurrencyPriceInUsd = marketReferenceCurrencyPriceInUsdProxyAggregator
-        .latestAnswer();
+          .marketReferenceCurrencyPriceInUsd = marketReferenceCurrencyPriceInUsdProxyAggregator
+          .latestAnswer();
       } else {
         baseCurrencyInfo.marketReferenceCurrencyUnit = baseCurrencyUnit;
         baseCurrencyInfo.marketReferenceCurrencyPriceInUsd = int256(baseCurrencyUnit);

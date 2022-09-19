@@ -26,6 +26,8 @@ import {UserConfiguration} from '../libraries/configuration/UserConfiguration.so
 import {DataTypes} from '../libraries/types/DataTypes.sol';
 import {LendingPoolStorage} from './LendingPoolStorage.sol';
 
+import 'hardhat/console.sol';
+
 /**
  * @title LendingPool contract
  * @dev Main point of interaction with an Aave protocol's market
@@ -239,7 +241,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     uint256 rateMode,
     address onBehalfOf
   ) external override whenNotPaused returns (uint256) {
-    DataTypes.ReserveData storage reserve = _reserves[asset];
+    address _asset = asset;
+    DataTypes.ReserveData storage reserve = _reserves[_asset];
 
     (uint256 stableDebt, uint256 variableDebt) = Helpers.getUserCurrentDebt(onBehalfOf, reserve);
 
@@ -254,8 +257,11 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       variableDebt
     );
 
-    uint256 paybackAmount =
-      interestRateMode == DataTypes.InterestRateMode.STABLE ? stableDebt : variableDebt;
+    uint256 paybackAmount = interestRateMode == DataTypes.InterestRateMode.STABLE
+      ? stableDebt
+      : variableDebt;
+
+    uint256 creditBack = amount.percentMul(10); //we should add CREDIT_FACTOR Variable
 
     if (amount < paybackAmount) {
       paybackAmount = amount;
@@ -274,17 +280,28 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     }
 
     address aToken = reserve.aTokenAddress;
-    reserve.updateInterestRates(asset, aToken, paybackAmount, 0);
+    address CreditToken = reserve.creditTokensAddress;
+    reserve.updateInterestRates(_asset, aToken, paybackAmount.sub(creditBack), 0);
 
     if (stableDebt.add(variableDebt).sub(paybackAmount) == 0) {
       _usersConfig[onBehalfOf].setBorrowing(reserve.id, false);
     }
 
-    IERC20(asset).safeTransferFrom(msg.sender, aToken, paybackAmount);
+    IERC20(_asset).safeTransferFrom(msg.sender, aToken, paybackAmount.sub(creditBack));
 
-    IAToken(aToken).handleRepayment(msg.sender, paybackAmount);
+    IAToken(aToken).handleRepayment(msg.sender, paybackAmount.sub(creditBack));
 
-    emit Repay(asset, onBehalfOf, msg.sender, paybackAmount);
+    IERC20(_asset).safeTransferFrom(msg.sender, CreditToken, creditBack);
+
+    IStableDebtToken(reserve.creditTokensAddress).mint(onBehalfOf, onBehalfOf, creditBack, 0);
+
+    /* if (_usersConfig[onBehalfOf].hascreditbacked(reserve.id) == false) {
+      console.log('Going into Credit Backed true');
+
+      _usersConfig[onBehalfOf].setcreditbacked(reserve.id, true);
+    }*/
+
+    emit Repay(_asset, onBehalfOf, msg.sender, paybackAmount);
 
     return paybackAmount;
   }
@@ -432,17 +449,16 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     address collateralManager = _addressesProvider.getLendingPoolCollateralManager();
 
     //solium-disable-next-line
-    (bool success, bytes memory result) =
-      collateralManager.delegatecall(
-        abi.encodeWithSignature(
-          'liquidationCall(address,address,address,uint256,bool)',
-          collateralAsset,
-          debtAsset,
-          user,
-          debtToCover,
-          receiveAToken
-        )
-      );
+    (bool success, bytes memory result) = collateralManager.delegatecall(
+      abi.encodeWithSignature(
+        'liquidationCall(address,address,address,uint256,bool)',
+        collateralAsset,
+        debtAsset,
+        user,
+        debtToCover,
+        receiveAToken
+      )
+    );
 
     require(success, Errors.LP_LIQUIDATION_CALL_FAILED);
 
@@ -597,7 +613,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       uint256 availableBorrowsETH,
       uint256 currentLiquidationThreshold,
       uint256 ltv,
-      uint256 healthFactor
+      uint256 healthFactor,
+      uint256 totalCreditInEth
     )
   {
     (
@@ -605,7 +622,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       totalDebtETH,
       ltv,
       currentLiquidationThreshold,
-      healthFactor
+      healthFactor,
+      totalCreditInEth
     ) = GenericLogic.calculateUserAccountData(
       user,
       _reserves,
@@ -618,7 +636,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     availableBorrowsETH = GenericLogic.calculateAvailableBorrowsETH(
       totalCollateralETH,
       totalDebtETH,
-      ltv
+      ltv,
+      totalCreditInEth
     );
   }
 
@@ -713,7 +732,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   }
 
   /**
-   * @dev Returns the fee on flash loans 
+   * @dev Returns the fee on flash loans
    */
   function FLASHLOAN_PREMIUM_TOTAL() public view returns (uint256) {
     return _flashLoanPremiumTotal;
@@ -787,14 +806,16 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     address aTokenAddress,
     address stableDebtAddress,
     address variableDebtAddress,
-    address interestRateStrategyAddress
+    address interestRateStrategyAddress,
+    address creditTokenAddress
   ) external override onlyLendingPoolConfigurator {
     require(Address.isContract(asset), Errors.LP_NOT_CONTRACT);
     _reserves[asset].init(
       aTokenAddress,
       stableDebtAddress,
       variableDebtAddress,
-      interestRateStrategyAddress
+      interestRateStrategyAddress,
+      creditTokenAddress
     );
     _addReserveToList(asset);
   }
@@ -858,10 +879,9 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     address oracle = _addressesProvider.getPriceOracle();
 
-    uint256 amountInETH =
-      IPriceOracleGetter(oracle).getAssetPrice(vars.asset).mul(vars.amount).div(
-        10**reserve.configuration.getDecimals()
-      );
+    uint256 amountInETH = IPriceOracleGetter(oracle).getAssetPrice(vars.asset).mul(vars.amount).div(
+      10**reserve.configuration.getDecimals()
+    );
 
     ValidationLogic.validateBorrow(
       vars.asset,

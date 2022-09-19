@@ -1,6 +1,10 @@
 import { task } from 'hardhat/config';
 import { eContractid } from '../../helpers/types';
 import { deployUiPoolDataProviderV2 } from '../../helpers/contracts-deployments';
+import {
+  getUiPoolDataProviderV2,
+  getLendingPoolAddressesProvider,
+} from '../../helpers/contracts-getters';
 import { chainlinkAggregatorProxy, chainlinkEthUsdAggregatorProxy } from '../../helpers/constants';
 
 task(`deploy-${eContractid.UiPoolDataProviderV2}`, `Deploys the UiPoolDataProviderV2 contract`)

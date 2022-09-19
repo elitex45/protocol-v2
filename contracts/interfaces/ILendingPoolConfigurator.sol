@@ -7,6 +7,7 @@ interface ILendingPoolConfigurator {
     address aTokenImpl;
     address stableDebtTokenImpl;
     address variableDebtTokenImpl;
+    address creditTokenImpl;
     uint8 underlyingAssetDecimals;
     address interestRateStrategyAddress;
     address underlyingAsset;
